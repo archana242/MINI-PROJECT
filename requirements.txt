@@ -1,2 +1,5 @@
 pandas
 flask
+google-generativeai
+python-dotenv
+openpyxl
