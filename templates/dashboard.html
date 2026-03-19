@@ -2,68 +2,155 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - InstaAnalytics</title>
+    <title>Dashboard - SocialPulse</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { font-family: 'Poppins'; background: linear-gradient(135deg, #1a1a2e, #16213e, #4a1c40); color: white; min-height: 100vh; margin: 0; }
-        .navbar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding: 15px; }
-        .navbar-brand { color: white; font-weight: 700; text-decoration: none; font-size: 1.5rem; }
-        .nav-link { color: rgba(255,255,255,0.7) !important; font-weight: 500; margin: 0 10px; }
-        .nav-link:hover, .nav-link.active { color: white !important; }
-        .container { max-width: 1100px; padding-top: 50px; }
-        .card { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; color: white; backdrop-filter: blur(10px); margin-bottom: 20px; }
-        .stat-box { text-align: center; padding: 20px; }
-        .stat-number { font-size: 2.5rem; font-weight: bold; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e, #4a1c40); color: white; min-height: 100vh; margin: 0; }
+        .navbar { background: rgba(0,0,0,0.5); padding: 15px; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        .row-layout { display: flex; flex-wrap: nowrap; margin: 0; width: 100%; min-height: 100vh; }
+        .sidebar { width: 250px; min-height: 100vh; background: rgba(0,0,0,0.3); padding-top: 20px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar a { color: rgba(255,255,255,0.7); padding: 12px 20px; display: flex; text-decoration: none; border-radius: 10px; margin: 5px 15px; transition: 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
+        
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; width: calc(100% - 250px); }
+        .card { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; color: white; backdrop-filter: blur(10px); margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); }
+        .badge-data { background: linear-gradient(45deg, #405de6, #833ab4); border: 1px solid rgba(255,255,255,0.2); padding: 8px 15px; }
+        .insight-box { background: rgba(0,0,0,0.2); border-left: 4px solid #e1306c; padding: 15px; border-radius: 5px; }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="home.html"><i class="bi bi-instagram"></i> InstaAnalytics</a>
-            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="insights.html">Insights</a></li>
-                    <li class="nav-item"><a class="nav-link" href="postdetails.html">Post Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="upload.html">Upload</a></li>
-                </ul>
-            </div>
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand text-white fw-bold" href="/"><i class="bi bi-instagram me-2"></i> SocialPulse</a>
+            <span class="badge rounded-pill fs-6 badge-data">
+                <i class="bi bi-database me-2"></i> Active Data: {{ current_file if current_file else 'Default Sample (Upload yours!)' }}
+            </span>
         </div>
     </nav>
 
-    <div class="container">
-        <h2>Dashboard</h2>
-        
-        <!-- Stats -->
-        <div class="row">
-            <div class="col-md-3"><div class="card stat-box"><div class="stat-number">---</div><p>Total Posts</p></div></div>
-            <div class="col-md-3"><div class="card stat-box"><div class="stat-number">---</div><p>Total Likes</p></div></div>
-            <div class="col-md-3"><div class="card stat-box"><div class="stat-number">---</div><p>Comments</p></div></div>
-            <div class="col-md-3"><div class="card stat-box"><div class="stat-number">---</div><p>Saves</p></div></div>
-        </div>
+    <div class="row-layout">
+        <nav class="sidebar">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house-door me-2"></i> Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/dashboard"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/insights"><i class="bi bi-graph-up me-2"></i> Insights</a></li>
+                <li class="nav-item"><a class="nav-link" href="/upload"><i class="bi bi-cloud-upload me-2"></i> Upload New Data</a></li>
+            </ul>
+        </nav>
 
-        <!-- Chart Area -->
-        <div class="card">
-            <h5>Engagement Trend</h5>
-            <p>Chart Placeholder</p>
-        </div>
+        <main class="main-content">
+            <h2 class="mb-4">Dashboard Overview</h2>
+            
+            <div class="row text-center mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <h6 class="text-white-50">Total Posts</h6>
+                        <h3>{{ metrics.totals.total_posts }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <h6 class="text-white-50">Total Likes</h6>
+                        <h3>{{ metrics.totals.total_likes }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <h6 class="text-white-50">Total Comments</h6>
+                        <h3>{{ metrics.totals.total_comments }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <h6 class="text-white-50">Total Saves</h6>
+                        <h3>{{ metrics.totals.total_saves }}</h3>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Table -->
-        <div class="card">
-            <h5>Top Posts</h5>
-            <table class="table table-dark" style="color: white;">
-                <thead><tr><th>Post ID</th><th>Likes</th><th>Comments</th><th>Saves</th><th>Action</th></tr></thead>
-                <tbody>
-                    <tr><td>#101</td><td>1200</td><td>45</td><td>12</td><td><a href="postdetails.html" class="btn btn-sm btn-primary">View</a></td></tr>
-                    <tr><td>#102</td><td>980</td><td>32</td><td>8</td><td><a href="postdetails.html" class="btn btn-sm btn-primary">View</a></td></tr>
-                </tbody>
-            </table>
-        </div>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card h-100">
+                        <h5 class="mb-3"><i class="bi bi-lightbulb text-warning me-2"></i> Quick Strategy</h5>
+                        <div class="insight-box">
+                            <p class="mb-0">Your peak engagement happens at <strong>{{ best_time.best_hour if best_time.best_hour != 'N/A' else 'Unknown Time' }}</strong>. Aim to publish your highest quality content during this window to maximize initial algorithm reach.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4><i class="bi bi-trophy text-warning me-2"></i> Top Performing Posts</h4>
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-hover text-center align-middle" style="background: transparent;">
+                        <thead>
+                            <tr class="text-white-50">
+                                <th>Rank</th>
+                                <th>Date</th>
+                                <th>Likes</th>
+                                <th>Comments</th>
+                                <th>Saves</th>
+                                <th>Score</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for post in metrics.top_posts %}
+                            <tr>
+                                <td><span class="badge bg-warning text-dark fs-6">#{{ loop.index }}</span></td>
+                                <td>{{ post.post_datetime if post.post_datetime else post.date_time }}</td>
+                                <td class="text-success">{{ post.likes }}</td>
+                                <td class="text-info">{{ post.comments }}</td>
+                                <td class="text-warning">{{ post.saves }}</td>
+                                <td><strong>{{ post.engagement_score }}</strong></td>
+                                <td><a href="/postdetails?post_index={{ loop.index0 }}" class="btn btn-sm text-white" style="background: linear-gradient(45deg, #405de6, #833ab4); border: none;">View</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <h4 class="mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i> Post Doctor Diagnostics</h4>
+                <p class="text-white-50 mb-4">An automated audit of your <strong>lowest performing posts</strong>. Here is why they failed and how to fix them:</p>
+                
+                <div class="row">
+                    {% if doctor|length == 0 %}
+                    <div class="col-12">
+                        <p class="text-success"><i class="bi bi-check-circle me-2"></i>No severely underperforming posts detected! Your content strategy is highly consistent.</p>
+                    </div>
+                    {% else %}
+                        {% for diagnosis in doctor[:6] %}
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3" style="background: rgba(0,0,0,0.25); border-radius: 12px; border-left: 4px solid #dc3545;">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge bg-danger text-light">Needs Fix</span>
+                                    <small class="text-white-50">Score: <strong>{{ diagnosis.engagement_score }}</strong></small>
+                                </div>
+                                
+                                <div class="mb-3" style="font-size: 0.8rem; color: #a0a0a0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+                                    <i class="bi bi-file-earmark-text me-1"></i> {{ diagnosis.identifier }}
+                                </div>
+                                
+                                <p class="mb-1" style="font-size: 0.95rem;">
+                                    <i class="bi bi-clipboard2-data text-warning me-2"></i> 
+                                    <span class="text-white-50">Diagnosis:</span> <strong>{{ diagnosis.reason }}</strong>
+                                </p>
+                                
+                                <p class="mb-0 text-success" style="font-size: 0.95rem;">
+                                    <i class="bi bi-capsule me-2"></i> 
+                                    <span class="text-white-50">Prescription:</span> <strong>{{ diagnosis.fix }}</strong>
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </main>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

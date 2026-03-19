@@ -15,16 +15,16 @@ def load_data(file_path):
 
 def calculate_totals(df):
     """
-    Calculate total likes, comments and saves.
+    Calculate total posts, likes, comments and saves.
     """
     totals = {
+        "total_posts": int(len(df)),  # <-- We added this line to count the posts!
         "total_likes": int(df["likes"].sum()),
         "total_comments": int(df["comments"].sum()),
         "total_saves": int(df["saves"].sum())
     }
 
     return totals
-
 
 def calculate_engagement_score(df):
     """
@@ -42,6 +42,7 @@ def calculate_engagement_score(df):
 def get_top_posts(df, top_n=5):
     """
     Return top N posts based on engagement score.
+    Handles missing columns gracefully!
     """
 
     if "engagement_score" not in df.columns:
@@ -52,8 +53,10 @@ def get_top_posts(df, top_n=5):
         ascending=False
     ).head(top_n)
 
-    result = top_posts[
-        ["date_time", "post_type", "likes", "comments", "saves", "engagement_score"]
-    ].to_dict(orient="records")
+    # BULLETPROOF LOGIC: Only ask for columns that actually exist in the uploaded CSV
+    desired_columns = ["date_time", "post_type", "likes", "comments", "saves", "engagement_score"]
+    available_columns = [col for col in desired_columns if col in df.columns]
+
+    result = top_posts[available_columns].to_dict(orient="records")
 
     return result

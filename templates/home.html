@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - InstaAnalytics</title>
+    <title>Home - SocialPulse</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -38,25 +38,19 @@
     <!-- Top Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand" href="home.html"><i class="bi bi-instagram"></i> InstaAnalytics</a>
+            <!-- Fixed link to root route -->
+            <a class="navbar-brand" href="/"><i class="bi bi-instagram me-2"></i> SocialPulse</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="insights.html">Insights</a></li>
-                    <li class="nav-item"><a class="nav-link" href="postdetails.html">Post Details</a></li>
-                    <li class="nav-item"><a class="nav-link" href="upload.html">Upload</a></li>
-                </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="container text-center">
-        <h2>Welcome Back!</h2>
+        <h2>Welcome!</h2>
         
         <div class="row g-4 justify-content-center">
             <div class="col-md-4">
@@ -64,7 +58,8 @@
                     <i class="bi bi-cloud-arrow-up card-icon"></i>
                     <h4>Upload Data</h4>
                     <p class="mb-3">Import your posts.</p>
-                    <a href="upload.html" class="btn btn-primary">Upload</a>
+                    <!-- Fixed link -->
+                    <a href="/upload" class="btn btn-primary">Upload</a>
                 </div>
             </div>
             <div class="col-md-4">
@@ -72,7 +67,8 @@
                     <i class="bi bi-speedometer2 card-icon"></i>
                     <h4>Dashboard</h4>
                     <p class="mb-3">View metrics.</p>
-                    <a href="dashboard.html" class="btn btn-primary">Dashboard</a>
+                    <!-- Fixed link -->
+                    <a href="/dashboard" class="btn btn-primary">Dashboard</a>
                 </div>
             </div>
             <div class="col-md-4">
@@ -80,7 +76,8 @@
                     <i class="bi bi-lightbulb card-icon"></i>
                     <h4>Insights</h4>
                     <p class="mb-3">Get tips.</p>
-                    <a href="insights.html" class="btn btn-primary">Insights</a>
+                    <!-- Fixed link -->
+                    <a href="/insights" class="btn btn-primary">Insights</a>
                 </div>
             </div>
         </div>
@@ -88,4 +85,4 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>                 
+</html>
