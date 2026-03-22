@@ -16,7 +16,7 @@ if not API_KEY:
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemma-3-27b-it')
 
-# ... the rest of your functions (engagement_score, generate_post_doctor_report, etc.) remain exactly the same ...
+
 def engagement_score(row):
     likes = row.get("likes", 0)
     comments = row.get("comments", 0)
@@ -25,7 +25,7 @@ def engagement_score(row):
     return likes + (2 * comments) + (2 * shares) + (2 * saves)
 
 # -------------------------------------------------
-# 1. POST DOCTOR (WITH SILENT FALLBACK)
+# 1. POST DOCTOR (WITH STRICT PARSING & FALLBACK)
 # -------------------------------------------------
 def generate_post_doctor_report(df):
     try:
@@ -40,17 +40,27 @@ def generate_post_doctor_report(df):
         ai_lines = []
 
         if not df_poor.empty:
-            prompt = "You are helping a jewelry brand on Instagram. Analyze these failing posts. Provide EXACTLY one line of text per post, formatted exactly like this: Reason | Tip\n\n"
+            # 1. STRICTER PROMPT FOR GEMMA 3
+            prompt = (
+                "You are helping a jewelry brand on Instagram. Analyze these failing posts. Provide EXACTLY one line of text per post, formatted exactly like this: Reason | Tip"
+                #"You are a social media expert. Analyze these 3 failing posts. "
+                #"Provide EXACTLY 3 lines of text. Each line MUST be formatted exactly like this: "
+                #"Diagnosis Reason | Actionable Tip\n"
+                #"Do NOT include 'Post 1:', numbers, or markdown stars.\n\n"
+            )
             
             for i, (_, row) in enumerate(df_poor.iterrows()):
-                caption = str(row.get("caption", ""))[:50]
-                prompt += f"Post {i+1}: Likes {row.get('likes', 0)}, Comments {row.get('comments', 0)}, Caption: '{caption}'\n"
+                caption = str(row.get("caption", ""))[:50].replace('\n', ' ')
+                prompt += f"Content {i+1}: Likes {row.get('likes', 0)}, Comments {row.get('comments', 0)}, Caption: '{caption}'\n"
             
             try:
                 response = model.generate_content(prompt)
-                ai_lines = [line for line in response.text.split('\n') if '|' in line]
+                
+                # 2. STRIP OUT ROGUE MARKDOWN
+                clean_text = response.text.replace('**', '').replace('*', '')
+                ai_lines = [line.strip() for line in clean_text.split('\n') if '|' in line]
+                
             except Exception as e:
-                # 👇 THIS WILL PRINT THE HIDDEN ERROR TO YOUR TERMINAL 👇
                 print(f"\n🛑 POST DOCTOR AI ERROR: {str(e)}\n")
                 
                 # 🚀 PRESENTATION MODE
@@ -69,10 +79,21 @@ def generate_post_doctor_report(df):
             fix = "Please refresh."
 
             if i < len(ai_lines):
-                parts = ai_lines[i].split('|')
+                # 3. BULLETPROOF PARSING: Split only on the FIRST pipe symbol
+                parts = ai_lines[i].split('|', 1) 
+                
                 if len(parts) >= 2:
-                    reason = parts[0].replace(f"Post {i+1}:", "").strip()
-                    fix = parts[1].strip()
+                    raw_reason = parts[0].strip()
+                    
+                    # Aggressively clean up any leftover prefixes Gemma ignored
+                    prefix_variations = [f"Post {i+1}:", f"Content {i+1}:", f"Post {i+1}", f"Content {i+1}", f"{i+1}.", f"{i+1}:"]
+                    for prefix in prefix_variations:
+                        if raw_reason.lower().startswith(prefix.lower()):
+                            raw_reason = raw_reason[len(prefix):].strip()
+                            
+                    # Remove any weird leading dashes or colons left behind
+                    reason = raw_reason.strip(" -:")
+                    fix = parts[1].strip(" -:")
 
             insights.append({
                 "post_index": index,
@@ -84,6 +105,7 @@ def generate_post_doctor_report(df):
 
         return insights
     except Exception as e:
+        print(f"CRITICAL ERROR IN POST DOCTOR: {e}")
         return []
 
 
@@ -117,7 +139,6 @@ def generate_weekly_schedule(df):
             raise Exception("Format Error")
             
     except Exception as e:
-        # 👇 THIS WILL PRINT THE HIDDEN ERROR TO YOUR TERMINAL 👇
         print(f"\n🛑 CONTENT STRATEGIST AI ERROR: {str(e)}\n")
         
         # 🚀 PRESENTATION MODE

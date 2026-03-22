@@ -25,16 +25,22 @@ GLOBAL_CACHE = {
 app = Flask(__name__)
 app.secret_key = "socialpulse_super_secret_key" 
 
-# --- VERCEL FIX: The Upload Folder ---
-# Vercel ONLY allows writing to the /tmp folder. 
+# --- VERCEL FIX: Absolute Pathing ---
+# 1. Grab the exact physical location of app.py on the Vercel server
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# 2. Vercel ONLY allows writing to the /tmp folder. 
 app.config['UPLOAD_FOLDER'] = '/tmp/uploads/'
-app.config['DEFAULT_DATASET'] = 'data/sample_dataset.csv'
 
-# Create the temp directory for uploads
+# 3. Create the absolute path to your dataset
+app.config['DEFAULT_DATASET'] = os.path.join(BASE_DIR, 'data', 'sample_dataset.csv')
+
+# Create the temp directory for user uploads
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-# The data folder is part of your repo, so it's read-only on Vercel, which is fine!
-os.makedirs('data', exist_ok=True)
 
+# Note: I REMOVED the os.makedirs('data') line that was here. 
+# Vercel's main file system is read-only. As long as you pushed the 'data' 
+# folder to GitHub, Vercel already has it!
 def clean_and_standardize_csv(df):
     df.columns = df.columns.str.lower().str.strip()
     column_mappings = {
@@ -264,34 +270,48 @@ def postdetails():
             comments = int(selected_post.get('comments', 0))
             saves = int(selected_post.get('saves', 0))
             
-            median_likes = df['likes'].median() if 'likes' in df.columns else 0
-            median_comments = df['comments'].median() if 'comments' in df.columns else 0
-            median_saves = df['saves'].median() if 'saves' in df.columns else 0
+            # Use max(1, ...) to prevent division by zero errors
+            median_likes = max(1, df['likes'].median() if 'likes' in df.columns else 1)
+            median_comments = max(1, df['comments'].median() if 'comments' in df.columns else 1)
+            median_saves = max(1, df['saves'].median() if 'saves' in df.columns else 1)
 
-            if saves > (median_saves * 1.5) and saves > 0: 
-                verdict = f"Smart Analysis: High Value Content. This post generated 50%+ more saves than your historical median ({int(median_saves)} saves). Your audience found this highly educational."
-            elif comments > (median_comments * 1.5) and comments > 0:
-                verdict = f"Smart Analysis: Conversation Starter. Comments are significantly above your baseline median of {int(median_comments)}. Reply to these quickly to maximize algorithmic reach."
-            elif likes > (median_likes * 1.2) and likes > 0:
-                verdict = f"Smart Analysis: Strong Reach. This outperformed your average like baseline by over 20%. The visual hook here worked perfectly."
+            # --- THE NEW MATH: FIND THE BIGGEST SPIKE ---
+            save_ratio = saves / median_saves
+            comment_ratio = comments / median_comments
+            like_ratio = likes / median_likes
+            
+            best_metric = max(save_ratio, comment_ratio, like_ratio)
+
+            if best_metric == save_ratio and save_ratio > 1.2: 
+                verdict = f" High Value Content. This post generated {int((save_ratio-1)*100)}% more saves than your historical median ({int(median_saves)} saves). Your audience found this highly educational."
+            elif best_metric == comment_ratio and comment_ratio > 1.2:
+                verdict = f"Conversation Starter. Comments are {int((comment_ratio-1)*100)}% above your baseline median of {int(median_comments)}. Reply to these quickly to maximize algorithmic reach."
+            elif best_metric == like_ratio and like_ratio > 1.2:
+                verdict = f"Strong Reach. This outperformed your average like baseline by {int((like_ratio-1)*100)}%. The visual hook here worked perfectly."
             else:
-                verdict = "Smart Analysis: Consistent Performance. This post aligns with your normal engagement baseline. Try experimenting with a stronger Call-To-Action (CTA) next time to break past your average."
+                verdict = "Data-Driven Analysis: Consistent Performance. This post aligns perfectly with your normal engagement baseline. Try experimenting with a stronger Call-To-Action (CTA) next time to push it even further."
 
+            # --- THE NEW TIPS: UNIQUE FOR EACH RANK ---
             rank = post_index + 1
             if rank == 1:
                 tips['content_type'] = "This is your absolute best format. Double down on this exact style."
                 tips['momentum'] = "Incredible reach. Pin this to your profile so new visitors see it first."
-            elif rank <= 3:
-                tips['content_type'] = "Highly engaging content. Consider turning this topic into a Reel to reach non-followers."
-                tips['momentum'] = "Great traction. Try posting at this exact same time next week."
+            elif rank == 2:
+                tips['content_type'] = "Highly engaging topic. Consider turning this exact theme into a 3-part series."
+                tips['momentum'] = "Great traction. Share this to your Story today to catch anyone who missed it."
+            elif rank == 3:
+                tips['content_type'] = "Strong educational value. Repurpose this content into a carousel post next month."
+                tips['momentum'] = "Algorithm favorite. Try posting at this exact same time next week."
+            elif rank == 4:
+                tips['content_type'] = "Solid performance. Experiment with trending audio to boost this format's reach further."
+                tips['momentum'] = "Good engagement speed. Reply to all comments to keep the algorithm pushing it."
             else:
-                tips['content_type'] = "Experiment with shorter captions or trending audio to boost this format's reach."
-                tips['momentum'] = "Performance is average. Try engaging with other accounts for 15 mins before posting."
+                tips['content_type'] = "Consistent winner. Test a slightly shorter caption next time to see if retention increases."
+                tips['momentum'] = "Steady growth. Engage with 5 accounts in your niche before your next post."
 
     except Exception as e:
         print(f"CRITICAL ERROR IN POSTDETAILS: {e}")
 
     return render_template('postdetails.html', post=selected_post, rank=post_index + 1, tips=tips, verdict=verdict, current_file=filename)
-
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
